@@ -1,7 +1,7 @@
 # This repository contains code and data to accompany the manuscript "Quantifying the impact of food we eat on species extinctions".
 # Thomas S Ball,  10/04/2025
 
-All code contained in this repository is written in Python, and thus require a working Python environment to work, but aside from some minor modification of file paths should not require any modification.
+All code contained in this repository is written in Python, and thus requires a working Python environment to function, but aside from some minor tweaking of output file paths should not require any modification.
 
 The scripts rely on the Python standard library, alongside pandas, numpy, and openpyxl, alongside matplotlib for the plotting scripts. These are found in the 'reqs' file, and can be installed by running 'pip install -r reqs'.
 
