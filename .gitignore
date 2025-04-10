@@ -1,5 +1,8 @@
 *.tif
-*.csv
+model/global_commodity_impacts/datalist.pkl
+model/global_commodity_impacts/itemlist.pkl
+model/dat/SUA_Crops_Livestock_E_All_Data_(Normalized).csv
+model/dat/Production_Crops_Livestock_E_All_Data_(Normalized).csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -161,5 +164,6 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
-model/global_commodity_impacts/datalist.pkl
-model/global_commodity_impacts/itemlist.pkl
+
+model/global_commodity_impacts/country_bd_items_weights.csv
+model/dat/TradeMatrixFeed_import_dry_matter_2013.csv

@@ -24,7 +24,7 @@ def get_impacts(prov, year, coi, scenPath, datPath):
                                                "tb_pasture_factors_2.csv"),
                                   index_col = 0)        
     bd_opp_cost = pd.read_csv(os.path.join(datPath, "dat", 
-                                           "country_opp_cost_v2.csv"),
+                                           "country_opp_cost_v4.csv"),
                                            index_col = 0)
     
     prov = prov[np.logical_not(prov.Item.isna())]
@@ -201,15 +201,3 @@ def get_impacts(prov, year, coi, scenPath, datPath):
                 print(f"fao {fao_land_calc_err/fao_land_calc}")
             wdf.loc[idx,"bd_opp_cost_calc_err"] = err
     return wdf
-
-# if __name__ == "__main__":
-#     coi = "United Kingdom of Great Britain and Northern Ireland"
-#     year = 2019
-#     scenPath = "E:\\OneDrive\\OneDrive - University of Cambridge\\Work\\stack_paper\\results\\mod_ls"
-#     prov = pd.read_csv(os.path.join(scenPath, "feed.csv"), index_col = 0)
-#     datPath = "."
-#     feedimp = get_impacts(prov, year, coi, scenPath, datPath)
-#     feedimp.to_csv(os.path.join(scenPath, "feed_impacts_wErr.csv"))
-#     prov2 = pd.read_csv(os.path.join(scenPath, "human_consumed.csv"), index_col = 0)
-#     foodimp = get_impacts(prov2, year, coi, scenPath, datPath)
-#     foodimp.to_csv(os.path.join(scenPath, "human_consumed_impacts_wErr.csv"))

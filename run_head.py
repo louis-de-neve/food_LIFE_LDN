@@ -3,20 +3,25 @@ import model._get_impacts
 import pandas as pd
 import os
 
-scenPath = "/maps/tsb42/food_v0/results/bra"
-datPath = "/maps/tsb42/food_v0/model/"
-coi = "Brazil"
+scenPath = "/maps/tsb42/food_v0/results/bra" # where the results of this run 
+                                        # are to be saved
+
+
+datPath = "/maps/tsb42/food_v0/model/"  # this needs to point to the working 
+                                        # directory (i.e. where this script is 
+                                        # located)
+                                        
+coi = "Brazil" # country of interest
+
+
 
 years = [2017,2018,2019,2020,2021]
-
 sua = pd.read_csv(os.path.join(datPath, "dat",
                     "SUA_Crops_Livestock_E_All_Data_(Normalized).csv"),
                     encoding = "latin-1", engine="python")
 fs = sua[(sua.Area==coi)&(sua["Element Code"]==5141)&(sua.Year.isin(years))]
-
 # run consumption / prov
 model._consumption_provenance.main(fs, coi, scenPath, datPath)
-
 # run impact calcs
 fprov = pd.read_csv(os.path.join(scenPath, "feed.csv"), index_col = 0)
 feedimp = model._get_impacts.get_impacts(fprov, 2019, coi, scenPath, datPath)

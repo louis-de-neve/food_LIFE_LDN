@@ -9,6 +9,7 @@ import numpy as np
 import os
 import sys
 
+
 try:
     import data_utils
 except ModuleNotFoundError:
@@ -30,10 +31,6 @@ def add_item_cols(indf, datPath):
     return indf
 
 def main(fs, country_of_interest, scenPath, datPath, prov_err_guesstimate):
-    
-    global fserr
-    global means
-    global errs
     
     fserr = fs.copy()
     means = fs.groupby(["Item", "Item Code"]).Value.mean().reset_index()
@@ -147,8 +144,7 @@ def main(fs, country_of_interest, scenPath, datPath, prov_err_guesstimate):
                 for row in df.index:
                    
                     rowdat = df.loc[row]
-                    if rowdat.Producer_Country_Code == coi_code and \
-                        rowdat.Item != "Cloves":                       
+                    if rowdat.Producer_Country_Code == coi_code:                       
                         try:
                             gaez_name = crop_table.loc[rowdat.Item].GAEZres06
                             offshoreRatio = prod_sum.loc[gaez_name].ratio
@@ -236,8 +232,6 @@ def main(fs, country_of_interest, scenPath, datPath, prov_err_guesstimate):
         feed_prov : animal products converted to feed requirement and respective
                     crop provenance (countries * feed products)
         """
-        global df_hc
-        global df_hc_err
         df_hc = fs.copy()
         df_hc_err = fserr.copy()
         for row in df_hc.iterrows():
@@ -250,9 +244,6 @@ def main(fs, country_of_interest, scenPath, datPath, prov_err_guesstimate):
                 item_map["FAO_code"]==FAO_code].primary_item   
             if len(primary_item_code) != 0:
                 primary_item_code = primary_item_code.values[0]
-                if primary_item_code == 254:
-                    print(item_name)
-                    print(df_hc[df_hc.item_name == item_name].Value)
                 FAO_name_primary = FAO_name_primary.values[0]
                 df_hc.loc[row[0], "primary_item"] = FAO_name_primary
                 df_hc.loc[row[0], "primary_item_code"] = primary_item_code
@@ -365,15 +356,3 @@ def main(fs, country_of_interest, scenPath, datPath, prov_err_guesstimate):
     feed_prov = feed_prov[(feed_prov.Value > 1E-8)&(feed_prov.provenance > 0)]
     feed_prov.to_csv(os.path.join(scenPath, "feed.csv"))
     return cons_prov, feed_prov
-
-# if __name__ == "__main__":
-#     prov_err_guesstimate = 0.1
-#     coi = "United Kingdom of Great Britain and Northern Ireland"
-#     years = [2017,2018,2019,2020,2021]
-#     datPath = "E:\\OneDrive\\OneDrive - University of Cambridge\\Work\\stack_paper\\dat\\model"
-#     scenPath = "E:\\OneDrive\\OneDrive - University of Cambridge\\Work\\stack_paper\\results\\mod_ls"
-#     sua = pd.read_csv(os.path.join(datPath, "dat",
-#                         "SUA_Crops_Livestock_E_All_Data_(Normalized).csv"),
-#                         encoding = "latin-1")
-#     fs = sua[(sua.Area==coi)&(sua["Element Code"]==5141)&(sua.Year.isin(years))]
-#     main(fs, coi, scenPath, datPath, prov_err_guesstimate)

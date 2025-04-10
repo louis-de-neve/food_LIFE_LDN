@@ -11,17 +11,22 @@ import os
 import matplotlib.pyplot as plt
 
 
-odPath = "E:\\OneDrive\\OneDrive - University of Cambridge"
-# odPath = "C:\\Users\\Thomas Ball\\OneDrive - University of Cambridge"
+# odPath = "E:\\OneDrive\\OneDrive - University of Cambridge"
+odPath = "C:\\Users\\Thomas Ball\\OneDrive - University of Cambridge"
 resultsPath = os.path.join(odPath, "Work\\FOODv0\\results")
 figPath = "figs"
-datPath = "food_v0\\dat"
 
-global_dat = pd.read_csv(os.path.join("results", "odf_commodities.csv"),index_col=0)
-crop_db = pd.read_csv(os.path.join(odPath, "Work\\FOODv0\\food_v0", 
+datPath = os.path.join("..", "model", "dat")
+oPath = os.path.join("..", "model", "global_commodity_impacts")
+
+GROUPING = "group_name_v6"
+
+global_dat = pd.read_csv(os.path.join(resultsPath, "odf_commodities.csv"),index_col=0)
+crop_db = pd.read_csv(os.path.join(odPath, "Work", "FOODv0", "git", "food_v0", "model", 
     "crop_db.csv"))
 
 groups = crop_db.group_name_v6.unique()
+
 country_db_file = "nocsDataExport_20220822-151738.xlsx"
 country_db = pd.read_excel(os.path.join(datPath,country_db_file))
 pop_dat = pd.read_csv(os.path.join(datPath,"FAOSTAT_data_en_3-12-2024_population.csv"))
@@ -32,22 +37,6 @@ coi = {
         
         # "DEU" : "", 
         "USA" : {"marker" : ">", "color" : "#EDF97A"},
-        "BRA" : {"marker": "x", "color" : "#DC267F"},
-        "JPN" : {"marker": ".", "color" : "#FE6100"},
-        
-        "UGA" : {"marker" : "^", "color" : "#648FFF"},
-        "GBR" : {"marker": "v", "color" : "#FFB000"}, 
-        "IND" : {"marker": "o", "color" : "#785EF0"},
-        # "TZA" : {}, 
-        
-        # "LKA" : {}
-        # "UKR" : {}
-        }
-
-coi = {
-        
-        # "DEU" : "", 
-        "USA" : {"marker" : ">", "color" : "#EDF97A"},
         "JPN" : {"marker": ".", "color" : "#FE6100"},
         "GBR" : {"marker": "v", "color" : "#FFB000"}, 
         
@@ -60,38 +49,79 @@ coi = {
         # "UKR" : {}
         }
 
-colours = { 
-                'Ruminant meat' : "#C90D75",
-                'Pig meat'       : "#D64A98",
-                'Poultry meat'   : "#D880B1",
-                'Dairy'          : "#F7BDDD",
-                'Eggs'           : "#FFEDF7",
-                
-                'Grains'             : "#D55E00",
-                "Rice"               : "#D88E53",
-                "Soybeans"           : "#DCBA9E",
-                
-                'Roots and tubers'   : "#0072B2",
-                'Vegetables'         : "#4F98C1",
-                'Legumes and pulses' : "#9EBFD2",
-                
-                'Bananas'           : "#FFED00",
-                'Tropical fruit'    : "#FFF357",
-                'Temperate fruit'   : "#FDF8B9",
-                'Tropical nuts'     : "#27E2FF",
-                'Temperate nuts'    : "#7DEEFF",
-                    
-                'Sugar beet'    : "#FFC000",
-                'Sugar cane'    : "#F7C93B",
-                'Spices'        : "#009E73",
-                'Coffee'        : "#33CCA2",
-                'Cocoa'         : "#62DEBC",
-                "Tea and maté"  : "#A2F5DE",
-                
-                "Oilcrops" : "k",
-                "Other" : "#A2A2A2"
-                }
+colourdict = {"group_name_v6" : {'Ruminant meat' : "#C90D75",
+                                    'Pig meat'       : "#D64A98",
+                                    'Poultry meat'   : "#D880B1",
+                                    'Dairy'          : "#F7BDDD",
+                                    'Eggs'           : "#FFEDF7",
+                                    
+                                    'Grains'             : "#D55E00",
+                                    "Rice"               : "#D88E53",
+                                    "Soybeans"           : "#DCBA9E",
+                                    
+                                    'Roots and tubers'   : "#0072B2",
+                                    'Vegetables'         : "#4F98C1",
+                                    'Legumes and pulses' : "#9EBFD2",
+                                    
+                                    'Bananas'           : "#FFED00",
+                                    'Tropical fruit'    : "#FFF357",
+                                    'Temperate fruit'   : "#FDF8B9",
+                                    'Tropical nuts'     : "#27E2FF",
+                                    'Temperate nuts'    : "#7DEEFF",
+                                    
+                                    'Sugar beet'    : "#FFC000",
+                                    'Sugar cane'    : "#F7C93B",
+                                    'Spices'        : "#009E73",
+                                    'Coffee'        : "#33CCA2",
+                                    'Cocoa'         : "#62DEBC",
+                                    "Tea and maté"  : "#A2F5DE",
+                                    
+                                    "Oilcrops" : "#000000",
+                                    "Other" : "#A2A2A2"},
+              
+               "group_name_v7": {'Grains, roots, starchy carbohydrates' : "#E69F00",
+                                'Legumes, beans, nuts' : "#F0E442",
+                                'Fruit and vegetables' : "#009E73",
+                                'Stimulants and spices' : "#56B4E9",
+                                'Ruminant meat' : "#D55E00", 
+                                'Dairy and eggs' : "#0072B2",
+                                'Poultry and pig meat' : "#CC79A7", 
+                                'Total' : "#000000"
+                                }
+               }
 
+gmap = {
+    'Ruminant meat' : "Ruminant meat",
+    'Pig meat'       : "Poultry and pig meat",
+    'Poultry meat'   : "Poultry and pig meat",
+    'Dairy'          : "Dairy and eggs",
+    'Eggs'           : "Dairy and eggs",
+    
+    'Grains'             : "Grains, roots, starchy carbohydrates",
+    "Rice"               : "Grains, roots, starchy carbohydrates",
+    "Soybeans"           : "Legumes, beans, nuts",
+    
+    'Roots and tubers'   : "Grains, roots, starchy carbohydrates",
+    'Vegetables'         : "Fruit and vegetables",
+    'Legumes and pulses' : "Legumes, beans, nuts",
+    
+    'Bananas'           : "Fruit and vegetables",
+    'Tropical fruit'    : "Fruit and vegetables",
+    'Temperate fruit'   : "Fruit and vegetables",
+    'Tropical nuts'     : "Legumes, beans, nuts",
+    'Temperate nuts'    : "Legumes, beans, nuts",
+    
+    'Sugar beet'    : "#FFC000",
+    'Sugar cane'    : "#F7C93B",
+    'Spices'        : "Stimulants and spices",
+    'Coffee'        : "Stimulants and spices",
+    'Cocoa'         : "Stimulants and spices",
+    "Tea and maté"  : "Stimulants and spices",
+    
+    "Oilcrops" : "#000000",
+    "Other" : "#A2A2A2"}
+
+colours = colourdict[GROUPING]
 data_df = pd.DataFrame()
 odf = pd.DataFrame()
 
@@ -206,7 +236,7 @@ for c in coi.keys():
   
 odf["cons_pc"] = odf.cons / odf["pop"]
 
-odf.to_csv(os.path.join(resultsPath, "odf_countries.csv"))
+# odf.to_csv(os.path.join(resultsPath, "odf_countries.csv"))
            
 odf = odf[~(odf.g.isna())]
 odf = odf[~odf.g.str.contains("sug",case=False)]
@@ -224,7 +254,32 @@ xgroups = groups[:-1]
 exc_groups = ["Sugar beet", "Sugar cane"]# "Other"]#, "Oilcrops"]
 xgroups = groups[:-1]
 xgroups = [k for k in colours.keys() if k not in exc_groups]
-
+xgroups =['Ruminant meat',
+          
+             'Pig meat',
+             'Poultry meat',
+             
+             'Dairy',
+             'Eggs',
+             
+             'Grains',
+             'Rice',
+             'Roots and tubers',
+             
+             'Bananas',
+             'Tropical fruit',
+             'Temperate fruit',
+             'Vegetables',
+             
+             'Soybeans',
+             'Legumes and pulses',
+             'Tropical nuts',
+             'Temperate nuts',
+             
+             'Spices',
+             'Coffee',
+             'Cocoa',
+             'Tea and maté']
 
 for a, area in enumerate(areas):
     
@@ -238,20 +293,32 @@ for a, area in enumerate(areas):
     # cal_scalar = 1 / cdat.total_cap.sum()
     
     ctotal = 0
+    mp = []
+    
     for g, group in enumerate(xgroups):
         
-        if group in colours.keys():
-            color = colours[group]
-        else:
-            color = "k" 
+        # color = colours[group]
+        mapped_group = gmap[group]
+        color = colourdict["group_name_v7"][mapped_group]
+        
+        # if group in colours.keys():
+        #     color = colours[group]
+        # else:
+        #     color = "k" 
             
         val = cdat[cdat.g==group].total_cap.squeeze() * cal_scalar
         
         if a == 0:
+            #label = group
+            label = mapped_group
+            if label in mp:
+                label = None
+            else:
+                mp.append(label)
             ax.bar(a, val, bottom = ctotal, 
                    color = color,
                    alpha = alpha,
-                   label = group)
+                   label = label)
         else:
             ax.bar(a, val, bottom = ctotal, color = color,
                    alpha = alpha)
@@ -259,9 +326,9 @@ for a, area in enumerate(areas):
         
     print(area, cdat[cdat.g=="Ruminant meat"].total_cap.squeeze() * cal_scalar / ctotal)
     
-ax.legend(ncol = 3)
+ax.legend(ncol = 1)
 ax.set_xticks(np.arange(0, len(areas),1), labels = ["UK" if a == "GBR" else a for a in areas])
-ax.set_ylabel("Mean daily consumption impact ($\Delta$E per-capita per-day)")
+ax.set_ylabel(u"Extinction opportunity cost ($10^{-9}\Delta$E per-capita)")
 fig = plt.gcf()
 fig.set_size_inches(figsize)
 fig.tight_layout()
@@ -468,13 +535,11 @@ dfalph = 0.6
 
 alpha = 0.8
 
-ylab = "Percentage of per-capita impact"
+ylab = "Percentage of impact"
 ylim = (-0.5, 0.5)
 yticks = np.arange(-0.5, 0.75, 0.25)
 yticks_labels = np.absolute(np.arange(-100, 150, 50))
 yticks_labels = [str(x) + "%" for x in yticks_labels]
-# yticks_labels = [100, "domestic   50", 0, "overseas   50", 100]
-
 fig, ax = plt.subplots()
 
 country_m49s = [country_db[country_db.ISO3==c].M49.squeeze() for c in areas]
@@ -484,6 +549,32 @@ exc_groups = ["Sugar beet", "Sugar cane", "Other"]#, "Oilcrops"]
 
 xgroups = groups[:-1]
 xgroups = [k for k in colours.keys() if k not in exc_groups]
+xgroups =['Ruminant meat',
+          
+             'Pig meat',
+             'Poultry meat',
+             
+             'Dairy',
+             'Eggs',
+             
+             'Grains',
+             'Rice',
+             'Roots and tubers',
+             
+             'Bananas',
+             'Tropical fruit',
+             'Temperate fruit',
+             'Vegetables',
+             
+             'Soybeans',
+             'Legumes and pulses',
+             'Tropical nuts',
+             'Temperate nuts',
+             
+             'Spices',
+             'Coffee',
+             'Cocoa',
+             'Tea and maté']
 
 labels = []
 
@@ -492,8 +583,6 @@ for a, area in enumerate(areas):
     cdat = odf[odf.a==area]
     ccode = country_db[country_db.ISO3==area].M49
     ccals = cal_dat[cal_dat["Area Code (M49)"]==ccode.squeeze()].Value.squeeze()
-    # cal_scalar = mean_cals / ccals
-    # cal_scalar = 1
     cal_scalar = 1 / cdat.total_cap.sum()
     cal_scalar = ccals
     
@@ -502,17 +591,19 @@ for a, area in enumerate(areas):
     except KeyError:
         marker = "x"
     
-    # alpha = (a + alpha_offset) / (ac + alpha_offset)
-    
-    
     os_b, do_b = 0,0 
-
+    
+    mp = []
+    
     for g, group in enumerate(xgroups):
         
-        try:
-            color = colours[group]
-        except KeyError:
-            color = "k"  
+        # try:
+        #     color = colours[group]
+        # except KeyError:
+        #     color = "k"  
+        # color = colours[group]
+        mapped_group = gmap[group]
+        color = colourdict["group_name_v7"][mapped_group]
         
         gdat = cdat[cdat.g == group]
         
@@ -523,11 +614,18 @@ for a, area in enumerate(areas):
         offset = - (offset_scale/2) + offset_scale * 0
         offset = 0
         
+        # label = group
+        label = mapped_group
+        if label in mp:
+            label = None
+        else:
+            mp.append(label)
+            
         xpos = a + offset
-        if group not in ax.get_legend_handles_labels()[1]:
+        if label not in ax.get_legend_handles_labels()[1]:
             ax.bar(xpos, os_val, bottom = os_b, 
                    width = bwidth, color = color, alpha = alpha,
-                   label = group)
+                   label = label)
         else:
             ax.bar(xpos, os_val, bottom = os_b, 
                    width = bwidth, color = color, alpha = alpha,
@@ -539,10 +637,10 @@ for a, area in enumerate(areas):
         os_b += os_val
         
         xpos = a + offset
-        if group not in ax.get_legend_handles_labels()[1]:
+        if label not in ax.get_legend_handles_labels()[1]:
             ax.bar(xpos, -do_val, bottom = -do_b,
                    width = bwidth, color = color, alpha = alpha,
-                   label = group)
+                   label = label)
         else:
             ax.bar(xpos, -do_val, bottom = -do_b,
                    width = bwidth, color = color, alpha = alpha,
@@ -561,7 +659,7 @@ ax.text(-0.5, 0.25, "Imported",
 ax.hlines(0, *ax.get_xlim(), linestyle = "--", color = "k", alpha = 0.6)
 ax.set_ylim(*ylim)
 ax.set_yticks(yticks, labels = yticks_labels)
-ax.legend(ncol = 2)
+ax.legend(ncol = 1)
 ax.set_xticks(np.arange(0, len(areas),1), labels = ["UK" if a == "GBR" else a for a in areas])
 ax.set_ylabel(ylab)
 fig = plt.gcf()

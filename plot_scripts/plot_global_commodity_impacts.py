@@ -18,10 +18,11 @@ db = pd.read_csv(os.path.join("..", "model", "crop_db.csv"))
 
 grouping = "group_name_v6"
 quants = [0.10, 0.5, 0.90]
+
 # =============================================================================
 figsize = (8,7)
 alpha = 0.8
-ylabel = u"Specific extinction impact distribution (log10 $\Delta$E per-kilogram-year)"
+ylabel = u"Extinction opporunity cost distribution (log10 $\Delta$E per-kilogram)"
 # =============================================================================
 
 colours_stim = { 
@@ -29,7 +30,7 @@ colours_stim = {
                 'Pig meat'       : "#D64A98",
                 'Poultry meat'   : "#D880B1",
                 'Dairy'          : "#F7BDDD",
-                'Eggs'           : "#FFEDF7",
+                'Eggs'           : "#fcc3e4",
                 
                 'Grains'             : "#D55E00",
                 "Rice"               : "#D88E53",
@@ -181,7 +182,7 @@ for i, item in enumerate(df[AGGREGATE].unique()):
     #     xcolor = "b"
     # else: xcolor = "g" 
     
-    color = "#D55E00"
+    # color = "#D55E00"
 
     # PLOT
     ax.bar(i, pr, bottom = LQ, fill=True, color = color, 
