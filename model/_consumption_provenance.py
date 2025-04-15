@@ -30,7 +30,7 @@ def add_item_cols(indf, datPath):
             pass
     return indf
 
-def main(fs, country_of_interest, scenPath, datPath, prov_err_guesstimate):
+def main(fs, country_of_interest, scenPath, datPath):
     
     fserr = fs.copy()
     means = fs.groupby(["Item", "Item Code"]).Value.mean().reset_index()
@@ -296,7 +296,7 @@ def main(fs, country_of_interest, scenPath, datPath, prov_err_guesstimate):
                 pass
             else:
                 prov = import_ratios.Value * value_primary
-                prov_err = prov * prov_err_guesstimate
+                prov_err = prov * 1 #prov_err_guesstimate # this doesn't work for now
                 imports["provenance"] = prov
                 if prov.sum() > 0 and value_primary > 0:
                     imports["provenance_err"] = prov * np.sqrt((prov_err/prov)**2\
@@ -304,11 +304,9 @@ def main(fs, country_of_interest, scenPath, datPath, prov_err_guesstimate):
                 cons_prov = pd.concat([cons_prov, imports])
         
         # provenance of feed
-        global primary_consumption_anim
         primary_consumption_anim = primary_consumption[
             primary_consumption.primary_item_code.isin(
                 weighing_factors.Item_Code)]
-        global feed_prov
         feed_prov = pd.DataFrame()
         # get animal product
         print("Calculating feed provenance")
@@ -339,7 +337,7 @@ def main(fs, country_of_interest, scenPath, datPath, prov_err_guesstimate):
                 if feed_conv == 0: pass
                 else:
                     prov_rat = dfx.Value * feed_conv
-                    prov_rat_err = prov_rat * prov_err_guesstimate
+                    prov_rat_err = prov_rat * 1#prov_err_guesstimate
                     prov = prov_rat * cVal
                     dfx["provenance"] = prov
                     if prov.sum() > 0 and cVal > 0:
