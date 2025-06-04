@@ -16,9 +16,9 @@ except ModuleNotFoundError:
     import offshoring.data_utils as data_utils
     
 def add_item_cols(indf, datPath):
+    indf = indf.copy()
     item_codes = data_utils.get_item_codes(datPath)
     for i, idx in enumerate(indf.index):
-        global CPC_item_code
         CPC_item_code = indf.loc[idx]["Item Code (CPC)"]
         try:
             item_info = item_codes[item_codes["CPC Code"] == CPC_item_code]
@@ -62,7 +62,7 @@ def main(fs, country_of_interest, scenPath, datPath):
     #%%
     item_codes = data_utils.get_item_codes(datPath)
     area_codes = data_utils.get_area_codes(datPath)
-    coi_code = area_codes[area_codes["LIST NAME"] == country_of_interest][
+    coi_code = area_codes[area_codes["ISO3"] == country_of_interest][
         "FAOSTAT"].values[0]
     #%% random funcs
     def area_code_to_iso(code):
@@ -195,7 +195,6 @@ def main(fs, country_of_interest, scenPath, datPath):
         human_consumed_imports = pd.concat([imports_feed_crops_ratio,
                                             imports_no_feed_anim_ratio])
         return human_consumed_imports
-    global human_consumed_imports
     human_consumed_imports = \
         import_ratios(  prov_mat_feed,
                         prov_mat_no_feed, 
@@ -206,13 +205,10 @@ def main(fs, country_of_interest, scenPath, datPath):
     file_reqs = ["content_factors_per_100g.xlsx", "primary_item_map_feed.csv", 
                  "weighing_factors.csv"]
     try:
-        global factors
         factors = pd.read_excel(data_utils.file_list(
             search=[datPath, file_reqs[0]])[0], skiprows=1)
-        global item_map
         item_map = pd.read_csv(data_utils.file_list(
             search=[datPath, file_reqs[1]])[0], encoding = "latin-1")
-        global weighing_factors
         weighing_factors = pd.read_csv(data_utils.file_list(search=[
             datPath, file_reqs[2]])[0], encoding = "latin-1")
     except IndexError:

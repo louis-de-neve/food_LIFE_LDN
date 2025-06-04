@@ -24,7 +24,7 @@ def get_impacts(prov, year, coi, scenPath, datPath):
                                                "tb_pasture_factors_2.csv"),
                                   index_col = 0)        
     bd_opp_cost = pd.read_csv(os.path.join(datPath, "dat", 
-                                           "country_opp_cost_v4.csv"),
+                                           "country_opp_cost_v6.csv"),
                                            index_col = 0)
     
     prov = prov[np.logical_not(prov.Item.isna())]
@@ -32,7 +32,7 @@ def get_impacts(prov, year, coi, scenPath, datPath):
     item_codes = data_utils.get_item_codes(datPath)
     area_codes = data_utils.get_area_codes(datPath)
     code_list = data_utils.fbs_sua_item_codes(datPath)
-    coi_code = area_codes[area_codes["LIST NAME"] == coi][
+    coi_code = area_codes[area_codes["ISO3"] == coi][
         "FAOSTAT"].values[0]
     wwf = data_utils.get_wwf_pbd(datPath)
     SM_wwf_items = pd.read_csv(os.path.join(
@@ -176,6 +176,14 @@ def get_impacts(prov, year, coi, scenPath, datPath):
                     else:
                         opp_cost_val = oc_crop
                         opp_cost_err = oc_crop_err
+
+        if isinstance(opp_cost_val, pd.Series):
+            if len(opp_cost_val.unique()) > 1:
+                print(f"Multiple values for {item_code} in {producer_iso}")
+                continue
+            else:
+                opp_cost_val = opp_cost_val.unique().squeeze()
+
         wdf.loc[idx, "bd_opp_cost_m2"] = opp_cost_val / 1000000 # convert to per m2
         if is_animal == True:
             
@@ -195,9 +203,11 @@ def get_impacts(prov, year, coi, scenPath, datPath):
                 opp_cost_err/opp_cost_val)**2+(
                     fao_land_calc_err/fao_land_calc)**2)
             
-            if err == 0:
-                print(f"val {wdf.loc[idx,'bd_opp_cost_calc']}")
-                print(f"oc {opp_cost_err/opp_cost_val}")
-                print(f"fao {fao_land_calc_err/fao_land_calc}")
+            if isinstance(err, pd.Series):
+                if len(err.unique()) > 1:
+                    err = np.nan()
+                else:
+                    err = err.unique().squeeze()
+
             wdf.loc[idx,"bd_opp_cost_calc_err"] = err
     return wdf

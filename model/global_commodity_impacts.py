@@ -23,7 +23,7 @@ if not os.path.isfile(os.path.join(oPath,"df.pkl")) or not os.path.isfile(
     # where are the files
     suafile = "SUA_Crops_Livestock_E_All_Data_(Normalized).csv" # FAO supply utilisation accounts
     prodfile = "Production_Crops_Livestock_E_All_Data_(Normalized).csv" # FAO production data
-    bd_factors_file = "country_opp_cost_v4.csv" # dat
+    bd_factors_file = "country_opp_cost_v6.csv" # dat
     country_db_file = "nocsDataExport_20220822-151738.xlsx" # dat
     comm_db_file = "crop_db.csv" # dat
     pasture_factors_file = "tb_pasture_factors_2.csv" # dat

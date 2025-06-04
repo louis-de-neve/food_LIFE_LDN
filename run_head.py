@@ -1,31 +1,82 @@
+import sys
+sys.path.append("model")
 import model._consumption_provenance
 import model._get_impacts
+import model._process_dat
 import pandas as pd
 import os
-
-scenPath = "/maps/tsb42/food_v0/results/bra" # where the results of this run 
-                                        # are to be saved
-
-
-datPath = "/maps/tsb42/food_v0/model/"  # this needs to point to the working 
-                                        # directory (i.e. where this script is 
-                                        # located)
-                                        
-coi = "Brazil" # country of interest
+from multiprocessing import Pool
+from tqdm import tqdm
+import logging
 
 
+MULTIPROCESSING = True
+NUM_PROCESSES = 10
+OVERWRITE = True
 
-years = [2017,2018,2019,2020,2021]
-sua = pd.read_csv(os.path.join(datPath, "dat",
-                    "SUA_Crops_Livestock_E_All_Data_(Normalized).csv"),
-                    encoding = "latin-1", engine="python")
-fs = sua[(sua.Area==coi)&(sua["Element Code"]==5141)&(sua.Year.isin(years))]
-# run consumption / prov
-model._consumption_provenance.main(fs, coi, scenPath, datPath)
-# run impact calcs
-fprov = pd.read_csv(os.path.join(scenPath, "feed.csv"), index_col = 0)
-feedimp = model._get_impacts.get_impacts(fprov, 2019, coi, scenPath, datPath)
-feedimp.to_csv(os.path.join(scenPath, "feed_impacts_wErr.csv"))
-hprov = pd.read_csv(os.path.join(scenPath, "human_consumed.csv"), index_col = 0)
-foodimp = model._get_impacts.get_impacts(hprov, 2019, coi, scenPath, datPath)
-foodimp.to_csv(os.path.join(scenPath, "human_consumed_impacts_wErr.csv"))
+logger = logging.getLogger(__name__)
+logging.basicConfig(filename='errors.log', encoding='utf-8', level=logging.DEBUG)
+
+def process_country(coi_iso, results_path="results"):
+    coi_iso = coi_iso.upper()
+    cdat = pd.read_excel(os.path.join("model", "dat", "nocsDataExport_20220822-151738.xlsx"))
+    coi_code = cdat[cdat["ISO3"]==coi_iso]["FAOSTAT"].values.squeeze()
+    
+    scenPath = os.path.join(results_path, coi_iso) # where the results of this run 
+                                            # are to be saved
+
+    if not os.path.isdir(scenPath):
+        os.makedirs(scenPath)
+
+    datPath = "model"  # this needs to point to the working 
+                                            # directory (i.e. where this script is 
+                                            # located)
+    
+    years = [2017,2018,2019,2020,2021]
+    sua = pd.read_csv(os.path.join(datPath, "dat",
+                        "SUA_Crops_Livestock_E_All_Data_(Normalized).csv"),
+                        encoding = "latin-1")
+
+    fs = sua[(sua["Area Code"]==coi_code)&(sua["Element Code"]==5141)&(sua.Year.isin(years))]
+
+    hprov_path = os.path.join(scenPath, "human_provenance.csv")
+    fprov_path = os.path.join(scenPath, "feed.csv")
+    
+    try:
+       
+        if OVERWRITE or not os.path.isfile(hprov_path) or not os.path.isfile(fprov_path):
+            model._consumption_provenance.main(fs, coi_iso, scenPath, datPath)
+
+        feedimp_path = os.path.join(scenPath, "feed_impacts_wErr.csv")
+        if OVERWRITE or not os.path.isfile(feedimp_path):
+            fprov = pd.read_csv(fprov_path, index_col = 0)
+            model._get_impacts.get_impacts(fprov, 2019, coi_iso, scenPath, datPath).to_csv(feedimp_path)
+
+        humanimp_path = os.path.join(scenPath, "human_consumed_impacts_wErr.csv")
+        if OVERWRITE or not os.path.isfile(humanimp_path):
+            hprov = pd.read_csv(os.path.join(scenPath, "human_consumed.csv"), index_col = 0)
+            model._get_impacts.get_impacts(hprov, 2019, coi_iso, scenPath, datPath).to_csv(humanimp_path)
+
+        if OVERWRITE or not os.path.isfile(os.path.join(scenPath, "xdf.csv")):
+            model._process_dat.main(datPath, scenPath, coi_code)
+
+    except Exception as e:
+        logger.error(f"Error processing country {coi_iso}: {e}")
+        return
+    
+
+if __name__ == '__main__':
+    cpath = os.path.join("model", "dat", "nocsDataExport_20220822-151738.xlsx")
+    cdat = pd.read_excel(cpath)
+    countries = cdat["ISO3"].unique().tolist()
+
+    countries = ["GBR"]
+
+    if MULTIPROCESSING:
+        
+        with Pool(processes=NUM_PROCESSES) as pool:
+            results = list(tqdm(pool.imap(process_country, countries), total=len(countries)))
+
+    else:
+        for coi_iso in countries:
+            process_country(coi_iso)
