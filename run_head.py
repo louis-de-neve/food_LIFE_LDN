@@ -14,10 +14,9 @@ MULTIPROCESSING = True
 NUM_PROCESSES = 10
 OVERWRITE = True
 
-logger = logging.getLogger(__name__)
-logging.basicConfig(filename='errors.log', encoding='utf-8', level=logging.DEBUG)
 
-def process_country(coi_iso, results_path="results"):
+def process_country(coi_iso, results_path="results", dat_path = "model"):
+    
     coi_iso = coi_iso.upper()
     cdat = pd.read_excel(os.path.join("model", "dat", "nocsDataExport_20220822-151738.xlsx"))
     coi_code = cdat[cdat["ISO3"]==coi_iso]["FAOSTAT"].values.squeeze()
@@ -28,12 +27,8 @@ def process_country(coi_iso, results_path="results"):
     if not os.path.isdir(scenPath):
         os.makedirs(scenPath)
 
-    datPath = "model"  # this needs to point to the working 
-                                            # directory (i.e. where this script is 
-                                            # located)
-    
     years = [2017,2018,2019,2020,2021]
-    sua = pd.read_csv(os.path.join(datPath, "dat",
+    sua = pd.read_csv(os.path.join(dat_path, "dat",
                         "SUA_Crops_Livestock_E_All_Data_(Normalized).csv"),
                         encoding = "latin-1")
 
@@ -45,20 +40,20 @@ def process_country(coi_iso, results_path="results"):
     try:
        
         if OVERWRITE or not os.path.isfile(hprov_path) or not os.path.isfile(fprov_path):
-            model._consumption_provenance.main(fs, coi_iso, scenPath, datPath)
+            model._consumption_provenance.main(fs, coi_iso, scenPath, dat_path)
 
         feedimp_path = os.path.join(scenPath, "feed_impacts_wErr.csv")
         if OVERWRITE or not os.path.isfile(feedimp_path):
             fprov = pd.read_csv(fprov_path, index_col = 0)
-            model._get_impacts.get_impacts(fprov, 2019, coi_iso, scenPath, datPath).to_csv(feedimp_path)
+            model._get_impacts.get_impacts(fprov, 2019, coi_iso, scenPath, dat_path).to_csv(feedimp_path)
 
         humanimp_path = os.path.join(scenPath, "human_consumed_impacts_wErr.csv")
         if OVERWRITE or not os.path.isfile(humanimp_path):
             hprov = pd.read_csv(os.path.join(scenPath, "human_consumed.csv"), index_col = 0)
-            model._get_impacts.get_impacts(hprov, 2019, coi_iso, scenPath, datPath).to_csv(humanimp_path)
+            model._get_impacts.get_impacts(hprov, 2019, coi_iso, scenPath, dat_path).to_csv(humanimp_path)
 
         if OVERWRITE or not os.path.isfile(os.path.join(scenPath, "xdf.csv")):
-            model._process_dat.main(datPath, scenPath, coi_code)
+            model._process_dat.main(dat_path, scenPath, coi_code)
 
     except Exception as e:
         logger.error(f"Error processing country {coi_iso}: {e}")
@@ -66,11 +61,13 @@ def process_country(coi_iso, results_path="results"):
     
 
 if __name__ == '__main__':
+
     cpath = os.path.join("model", "dat", "nocsDataExport_20220822-151738.xlsx")
     cdat = pd.read_excel(cpath)
     countries = cdat["ISO3"].unique().tolist()
 
-    countries = ["GBR"]
+    logger = logging.getLogger(__name__)
+    logging.basicConfig(filename='errors.log', encoding='utf-8', level=logging.DEBUG)
 
     if MULTIPROCESSING:
         
