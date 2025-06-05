@@ -13,5 +13,5 @@ The code requires extra data sources to run correctly:
 
  -"TradeMatrixFeed_import_dry_matter_2013.csv" is unfortuantely too large to be included in a github.com repository, and so has to be obtained by running the code accompanying Schwarzmueller (2022, zenodo.org/records/5751294). Run the code from Schwarzmueller following the instructions contained therein, and place the resulting file into the 'dat' folder. Note that other files from Schwarzmueller are already included to minimise the number of files the user is required to procure.
 
- With all the data in place, running the code requires you to execute 'run_head.py' as a python script, modifying the script itself to select the country-of-interest and corresponding output folder. Output files are not named in a country specific way, so you must create a seperate output folder for each country (for example: results/GBR, results/USA etc).
+ With all the data in place, running the code requires you to execute 'run_head.py' as a python script, this is currently set up to run across all countries for which there are data - and will create a seperate output folder for each in a 'results' folder (for example: results/GBR, results/USA etc).
 
