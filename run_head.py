@@ -28,9 +28,6 @@ def process_country(coi_iso, results_path="results",
     scenPath = os.path.join(results_path, coi_iso) # where the results of this run 
                                             # are to be saved
 
-    print(scenPath)
-    quit()
-
     if not os.path.isdir(scenPath):
         os.makedirs(scenPath)
 
