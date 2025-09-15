@@ -14,7 +14,7 @@ except ModuleNotFoundError:
 import os
 
 #%%
-def get_impacts(prov, year, coi, scenPath, datPath):
+def get_impacts(prov, year, coi, scenPath, datPath, bd_path):
     rums = {"Meat; cattle" : "bvmeat",
             'Meat; sheep' : "sgmeat",
             'Meat; goat' : "sgmeat",
@@ -22,10 +22,9 @@ def get_impacts(prov, year, coi, scenPath, datPath):
             }   
     tb_pasture_vals = pd.read_csv(os.path.join(datPath,"dat",
                                                "tb_pasture_factors_2.csv"),
-                                  index_col = 0)        
-    bd_opp_cost = pd.read_csv(os.path.join(datPath, "dat", 
-                                           "country_opp_cost_v6.csv"),
-                                           index_col = 0)
+                                  index_col = 0)
+    
+    bd_opp_cost = pd.read_csv(bd_path, index_col = 0)
     
     prov = prov[np.logical_not(prov.Item.isna())]
     prov = prov[prov.Value >= 0.015]

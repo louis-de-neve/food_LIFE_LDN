@@ -5,7 +5,7 @@ import os
 
 
 
-def main(datPath, scenPath, coi):
+def main(datPath, scenPath, bd_path, coi):
     
     grouping = "group_name_v7"
     
@@ -13,8 +13,7 @@ def main(datPath, scenPath, coi):
     
     #%%
     cropdb = pd.read_csv(os.path.join(datPath, "crop_db.csv"))
-    bd_opp_cost = pd.read_csv(os.path.join(datPath, "dat", "country_opp_cost_v6.csv"),
-                                           index_col = 0)
+    bd_opp_cost = pd.read_csv(bd_path, index_col = 0)
     
     bh = pd.read_csv(os.path.join(scenPath, "human_consumed_impacts_wErr.csv"), index_col = 0)
     bf = pd.read_csv(os.path.join(scenPath, "feed_impacts_wErr.csv"), index_col = 0)
