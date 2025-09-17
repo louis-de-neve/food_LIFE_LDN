@@ -3,6 +3,8 @@ sys.path.append("model")
 import model._consumption_provenance
 import model._get_impacts
 import model._process_dat
+import model.global_commodity_impacts
+
 import pandas as pd
 import os
 from multiprocessing import Pool
@@ -15,7 +17,6 @@ NUM_PROCESSES = 20
 OVERWRITE = True
 BD_PATH = "/maps/tsb42/bd_opp_cost/v4_GOMP/agri_intersect/outputs/country_opp_cost_v6_GOMP.csv"
 RESULTS_PATH = "../results"
-
 
 def process_country(coi_iso, results_path="results", 
                     dat_path = "model", 
@@ -83,3 +84,10 @@ if __name__ == '__main__':
     else:
         for coi_iso in countries:
             process_country(coi_iso, bd_path=BD_PATH, results_path=RESULTS_PATH)
+
+    model.global_commodity_impacts.main(OVERWRITE, BD_PATH, RESULTS_PATH)
+
+
+
+
+

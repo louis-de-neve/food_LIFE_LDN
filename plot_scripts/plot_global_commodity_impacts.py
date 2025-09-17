@@ -6,13 +6,17 @@ Created on Tue Jan  9 11:21:46 2024
 """
 
 import numpy as np
+import matplotlib as mpl
+mpl.rcParams['pdf.fonttype'] = 42
+mpl.rcParams['ps.fonttype'] = 42
 import matplotlib.pyplot as plt
 import pandas as pd
 import os
 import pickle
 
 datPath = os.path.join("..", "model", "dat")
-oPath = os.path.join("..", "model", "global_commodity_impacts")
+# oPath = os.path.join("..", "model", "global_commodity_impacts_vBird")
+oPath = "D:\\Food_v1\\all_results_v1_land"
 
 db = pd.read_csv(os.path.join("..", "model", "crop_db.csv"))
 
@@ -20,9 +24,12 @@ grouping = "group_name_v6"
 quants = [0.10, 0.5, 0.90]
 
 # =============================================================================
-figsize = (8,7)
+mm = 0.1*1/2.54 
+figsize = (88*mm, 95*mm)
+fontdict = {'fontsize': 5, 'family' : 'Arial' }
 alpha = 0.8
-ylabel = u"Extinction opporunity cost distribution (log10 $\Delta$E per-kilogram)"
+
+ylabel = u"Extinction opporunity cost distribution \n(log$_{10}$ $\Delta$E per-kilogram)"
 # =============================================================================
 
 colours_stim = { 
@@ -86,6 +93,7 @@ def invert_color(hex_color):
 
 def weighted_quantile(values, quantiles, sample_weight=None, 
                       values_sorted=False, old_style=False):
+    
     """ Very close to numpy.percentile, but supports weights.
     NOTE: quantiles should be in [0, 1]!
     :param values: numpy.array with data
@@ -143,12 +151,23 @@ df["t_est"] = df.bd * df.w
 AGGREGATE = "Group"
 # AGGREGATE = "Item"
 
+_ndict = {}
+
 for i, item in enumerate(df[AGGREGATE].unique()):
     dat = df[(df[AGGREGATE] == item)&(np.isfinite(df.w))]
     
     dat["wn"] = dat.w / dat.w.sum()
+    _ndict[item] = len(dat.bd)
+    
     df.loc[df[AGGREGATE] == item, ["LQ","MQ","HQ"]] = weighted_quantile(dat.bd, quants, 
                                 sample_weight=dat.wn,values_sorted=False)
+    
+    df.loc[df[AGGREGATE] == item, ["LQ_ARABLE","MQ_ARABLE","HQ_ARABLE"]] = weighted_quantile(dat.arable_kg_km2_fao, quants, 
+                                sample_weight=dat.wn,values_sorted=False)
+    
+    df.loc[df[AGGREGATE] == item, ["LQ_PASTURE","MQ_PASTURE","HQ_PASTURE"]] = weighted_quantile(dat.pasture_kg_km2_tb, quants, 
+                                sample_weight=dat.wn,values_sorted=False)
+    
     
 #%%
 df = df.sort_values("MQ")
@@ -157,15 +176,18 @@ odf =pd.DataFrame()
 df = df[df.Group != "Other"]
 tick_labels = []
 fig, ax = plt.subplots()
+
+ndict = {}
 for i, item in enumerate(df[AGGREGATE].unique()):       
     # FILTER
     dat = df[(df[AGGREGATE] == item)&(np.isfinite(df.w))].copy()
     dat["wn"] = dat.w / dat.w.sum()
     
+    ndict[item] = _ndict[item]
     # Get vals
-    LQ = dat.LQ.unique().squeeze()
-    MQ = dat.MQ.unique().squeeze()
-    HQ = dat.HQ.unique().squeeze()
+    LQ = dat.LQ.unique().squeeze() #/ 30000
+    MQ = dat.MQ.unique().squeeze() #/ 30000
+    HQ = dat.HQ.unique().squeeze() #/ 30000
     
     odf = pd.concat([odf, pd.DataFrame([item, LQ,MQ,HQ],index= ["g", "LQ", "MQ", "HQ"]).T])
     LQ = np.log10(LQ)
@@ -190,12 +212,20 @@ for i, item in enumerate(df[AGGREGATE].unique()):
     # ax.scatter(i, p50, marker = "x", color = xcolor)
     ax.bar(i, 0, bottom = MQ, fill=False, edgecolor = invert_color(color), alpha = 1)
     
+    # tick_labels.append(f"(n={_ndict[item]}) {item} ") 
     tick_labels.append(item) 
 
 # EXTRAS
 ax.set_xticks(np.arange(0,len(tick_labels),1), 
               labels = tick_labels, 
-                rotation = 90)
-ax.set_ylabel(ylabel)
+              rotation = 90,
+              fontdict = fontdict)
+ax.set_yticks(ax.get_yticks(), labels = ax.get_yticks(), fontdict = fontdict)
+ax.set_ylabel(ylabel, fontdict = fontdict)
 fig.set_size_inches(figsize)
 fig.tight_layout()
+
+#%%
+for key, item in ndict.items():
+    
+    print(key, item)
