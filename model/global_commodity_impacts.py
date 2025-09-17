@@ -12,11 +12,12 @@ import pickle
 import faostat
 
 def main(overwrite = True, 
-         bd_path = "country_opp_cost_v6.csv", 
-         results_path = "results"):
+         bd_path = os.path.join("dat", "country_opp_cost_v6.csv"), 
+         results_path = "results",
+         datPath = os.path.join("model", "dat")):
     
     years = 5
-    datPath = os.path.join("model", "dat")
+    # datPath = os.path.join("model", "dat")
     oPath = os.path.join(results_path, "global_commodity_impacts")
 
     #%%
@@ -110,7 +111,7 @@ def main(overwrite = True,
                     pass
                 
                 else:
-                    print(i/len(bd_items))
+                    # print(i/len(bd_items))
                     
                     bd_perkg,bd_perkg_err,pweights,pweights_err,areas,isanim = [],[],[],[],[],[]
                     kg_m2_wwf, kg_m2_tb, kg_m2_fao = [],[],[]
@@ -139,7 +140,7 @@ def main(overwrite = True,
                         prod_means = prods.groupby("Item").Value.agg(np.mean)
                         prod_errs = prods.groupby("Item").Value.agg(lambda x: np.std(x) / np.sqrt(len(x)))
                         
-                        print(areaISO3, item_name, prods)
+                        # print(areaISO3, item_name, prods)
                         
                         # calcualte weighted average yield for the group (+error)
                         yield_wmean,yield_wmean_err = w_mean_err(yield_means, yield_errs, prod_means, prod_errs)
@@ -175,7 +176,6 @@ def main(overwrite = True,
                             kg_m2_fao.append(yield_wmean)
                     
                     if len(bd_perkg) > 0:
-                        print("pd.DataFrame is:", pd.DataFrame, type(pd.DataFrame))
                         
                         # xdf = pd.DataFrame({"bd":bd_perkg,"bde":bd_perkg_err,"w":pweights,"we":pweights_err, "a":areas,"isanim":isanim})
                         xdf = pd.DataFrame({"bd":bd_perkg, "bd_f":bd_perkg,
@@ -405,7 +405,7 @@ def main(overwrite = True,
             pickle.dump(itemlist, file)
         file = None
 
-
+    #%%
 
     grouping = "group_name_v6"
     quants = [0.1, 0.5, 0.9]
@@ -487,11 +487,20 @@ def main(overwrite = True,
         df.loc[df[AGGREGATE] == item, ["LQ","MQ","HQ"]] = weighted_quantile(dat.bd, quants, 
                                     sample_weight=dat.wn,values_sorted=False)
         
-        df.loc[df[AGGREGATE] == item, ["LQ_ARABLE","MQ_ARABLE","HQ_ARABLE"]] = weighted_quantile(dat.arable_kg_km2_fao, quants, 
+        df.loc[df[AGGREGATE] == item, ["LQ_ARABLE_kgkm2","MQ_ARABLE_kgkm2","HQ_ARABLE_kgkm2"]] = weighted_quantile(dat.arable_kg_km2_fao, quants, 
                                     sample_weight=dat.wn,values_sorted=False)
         
-        df.loc[df[AGGREGATE] == item, ["LQ_PASTURE","MQ_PASTURE","HQ_PASTURE"]] = weighted_quantile(dat.pasture_kg_km2_tb, quants, 
+        df.loc[df[AGGREGATE] == item, ["LQ_PASTURE_kgkm2","MQ_PASTURE_kgkm2","HQ_PASTURE_kgkm2"]] = weighted_quantile(dat.pasture_kg_km2_tb, quants, 
                                     sample_weight=dat.wn,values_sorted=False)
     
     df.to_csv(os.path.join(oPath, "country_bd_items_weights.csv"))
         
+if __name__=="__main__":
+    
+    main(overwrite = True, 
+        bd_path = os.path.join("dat", "country_opp_cost_v6.csv"), 
+        results_path = "results",
+        datPath = os.path.join("dat"))
+    
+    
+    
