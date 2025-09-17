@@ -8,15 +8,24 @@ Created on Thu Mar  7 15:34:30 2024
 import pandas as pd
 import numpy as np
 import os
+import matplotlib as mpl
+mpl.rcParams['pdf.fonttype'] = 42
+mpl.rcParams['ps.fonttype'] = 42
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 
 # odPath = "E:\\OneDrive\\OneDrive - University of Cambridge"
 odPath = "C:\\Users\\Thomas Ball\\OneDrive - University of Cambridge"
-resultsPath = os.path.join(odPath, "Work\\FOODv0\\results")
+
+# resultsPath = "D:\\Food_v1\\all_results_v2"
+# resultsPath = os.path.join(odPath, "Work\\FOODv0\\results")
+# resultsPath = os.path.join(odPath, "Work\\Work for others\\Catherine CLR\\food_results")
+resultsPath = "E:\\Food_v1\\all_results_v1_gompertz"
+
 figPath = "figs"
 datPath = os.path.join(odPath, "Work", "FOODv0", "git", "food_v0", "model", "dat")
 
-global_dat = pd.read_csv(os.path.join(resultsPath, "odf_commodities.csv"),index_col=0)
+# global_dat = pd.read_csv(os.path.join(resultsPath, "odf_commodities.csv"),index_col=0)
 crop_db = pd.read_csv(os.path.join(datPath, "..", "crop_db.csv"))
 
 GROUPING = "group_name_v6"
@@ -27,19 +36,18 @@ pop_dat = pd.read_csv(os.path.join(datPath,"FAOSTAT_data_en_3-12-2024_population
 pop_dat = pop_dat[pop_dat.Year == 2021]
 cal_dat = pd.read_csv(os.path.join(datPath,"FAOSTAT_data_en_3-12-2024_calories.csv"))
 
-
 # %%
-# diets = pd.read_csv(os.path.join(odPath, "Work", "FOODv0", "diets5_UK.csv"), index_col = 0, encoding = "latin-1")
+diets = pd.read_csv(os.path.join(odPath, "Work", "FOODv0", "diets5_UK.csv"), index_col = 0, encoding = "latin-1")
 
-diets = pd.read_csv(os.path.join(odPath, "Work", "FOODv0", "diets5_US.csv"), index_col = 0, encoding = "latin-1")
+# diets = pd.read_csv(os.path.join(odPath, "Work", "FOODv0", "diets5_US.csv"), index_col = 0, encoding = "latin-1")
 # 
 diets = diets.loc[:, ~(diets.columns == "No-ruminant")]
-
+# diets = diets.loc[:, ~(diets.columns == "EAT-Lancet")]
 coi = {
         
         # "DEU" : "", 
-        "USA" : {"marker" : ">", "color" : "#EDF97A"},
-        # "GBR" : {"marker": "v", "color" : "#FFB000"}, 
+        # "USA" : {"marker" : ">", "color" : "#EDF97A"},
+        "GBR" : {"marker": "v", "color" : "#FFB000"}, 
         # "JPN" : {"marker": ".", "color" : "#FE6100"},
         # "BRA" : {"marker": "x", "color" : "#DC267F"},
         # "IND" : {"marker": "o", "color" : "#785EF0"},
@@ -175,6 +183,7 @@ for c in coi.keys():
         kdf = pd.read_csv(os.path.join(resultsPath, c.lower(), "kdf.csv"),index_col=0)
         xdf = pd.read_csv(os.path.join(resultsPath, c.lower(), "xdf.csv"),index_col=0)
     except FileNotFoundError:
+        quit()
         resultsPath_ext = "D:\\Food_v0\\all_results"
         kdf = pd.read_csv(os.path.join(resultsPath_ext, c.lower(), "kdf.csv"),index_col=0)
         xdf = pd.read_csv(os.path.join(resultsPath_ext, c.lower(), "xdf.csv"),index_col=0)
@@ -184,7 +193,6 @@ for c in coi.keys():
     
     for g, group in enumerate(groups):
         
-        print(group)
         
         if group == "Total":
             items = crop_db.Item
@@ -192,9 +200,9 @@ for c in coi.keys():
             items = crop_db[crop_db[GROUPING] == group].Item
         
         kdf_groupdat = kdf[kdf.Item.isin(items)]
-        total_cap = kdf_groupdat.bd_opp_total.sum() / (cpop * 365)
-        feed_cap = kdf_groupdat.bd_opp_feed.sum() / (cpop * 365)
-        food_cap = kdf_groupdat.bd_opp_food.sum() / (cpop * 365)
+        total_bd_cap = kdf_groupdat.bd_opp_total.sum() / (cpop * 365)
+        feed_bd_cap = kdf_groupdat.bd_opp_feed.sum() / (cpop * 365)
+        food_bd_cap = kdf_groupdat.bd_opp_food.sum() / (cpop * 365)
         
         # food
         xdfg = xdf[xdf.Item.isin(items)]
@@ -203,6 +211,12 @@ for c in coi.keys():
         offshore = xdfg[xdfg.Country_ISO != c]
         dom_oc_food = domestic.bd_opp_cost_calc.sum()
         os_oc_food = offshore.bd_opp_cost_calc.sum()
+        
+        dom_area_arable = domestic.Arable_m2.sum()
+        os_area_arable = offshore.Arable_m2.sum()
+        dom_area_pasture = domestic.Pasture_m2.sum()
+        os_area_pasture = domestic.Pasture_m2.sum()
+        
         w_mean_food_domestic = w_mean(domestic, "bd_opp_cost_calc", "provenance")
         w_mean_food_offshore = w_mean(offshore, "bd_opp_cost_calc", "provenance")
         
@@ -210,11 +224,13 @@ for c in coi.keys():
         xdfg = xdf[xdf.Animal_Product.isin(items)]
         domestic = xdfg[xdfg.Country_ISO == c]
         offshore = xdfg[xdfg.Country_ISO != c]
+        
         if len(xdfg) > 0:
             w_mean_feed_domestic = w_mean(domestic, "bd_opp_cost_calc", "provenance")
             w_mean_feed_offshore= w_mean(offshore, "bd_opp_cost_calc", "provenance")
             dom_oc_feed = domestic.bd_opp_cost_calc.sum()
             os_oc_feed = offshore.bd_opp_cost_calc.sum()
+            
         else:
             w_mean_feed_domestic = 0
             w_mean_feed_offshore = 0
@@ -234,16 +250,21 @@ for c in coi.keys():
         odf = pd.concat([odf, pd.DataFrame({
                         "a":c,
                         "g":group,
-                        "total_cap": total_cap,
-                        "feed_cap": feed_cap,
-                        "food_cap": food_cap,
+                        "total_bd_cap": total_bd_cap,
+                        "feed_bd_cap": feed_bd_cap,
+                        "food_bd_cap": food_bd_cap,
+                        
                         # "dom_kg" : tdom,
                         # "os_kg" : toff,
                         "ratio" : ratio,
                         "perc_os" : perc_os,
                         "cons" : prov,
-                        "pop" : cpop},
-            
+                        "pop" : cpop,
+                        
+                        "arable_m2_cap" : (dom_area_arable + os_area_arable) / (cpop * 365),
+                        "pasture_m2_cap" : (dom_area_pasture + os_area_pasture) / (cpop * 365)
+                        },
+
                      index = [0])
                          ])
   
@@ -260,7 +281,9 @@ areas = odf.a.unique()
 #%%
 fig, ax = plt.subplots()
 alpha = 0.8
-figsize = (8, 7)
+
+mm = 0.1*1/2.54 
+figsize = (88*mm, 78*mm)
 country_m49s = [country_db[country_db.ISO3==c].M49.squeeze() for c in areas]
 mean_cals = cal_dat[cal_dat["Area Code (M49)"].isin(country_m49s)].Value.mean()
 
@@ -317,9 +340,11 @@ for d, diet in enumerate(diets):
         # color = colours[group]
         mapped_group = gmap[group]
         color = colourdict["group_name_v7"][mapped_group]
+        # color = colourdict["group_name_v6"][group]
+        val = cdat[cdat.g==group].total_bd_cap.squeeze() * 1E9 / 30000 
+        # val = cdat[cdat.g==group].total_bd_cap.squeeze() / 30000 
+        # val = cdat[cdat.g==group].pasture_m2_cap.squeeze() + cdat[cdat.g==group].arable_m2_cap.squeeze() 
         
-        val = cdat[cdat.g==group].total_cap.squeeze()
-
         if group in ["Tea and maté", "Coffee", "Cocoa", "Oilcrops", "Other", "Spices"]:
             scalar = 1
             ascale = 1
@@ -338,6 +363,7 @@ for d, diet in enumerate(diets):
             
         if d == 0:
             label = mapped_group
+            # label = group
             if label in mp:
                 label = None
             else:
@@ -359,10 +385,21 @@ for d, diet in enumerate(diets):
                    linewidth = 0)
             
         ctotal = np.nansum([ctotal,val])
-    
-ax.legend(ncol = 2)
-ax.set_xticks(np.arange(0, len(diets.columns),1), labels = diets.columns)
-ax.set_ylabel(u"Extinction opportunity cost ($10^{-10}\Delta$E per-capita)")
+    print(diet, ctotal)
+fontdict = {'fontsize': 7, 'family' : 'Arial' }
+ax.legend(ncol = 1, prop = {'size': fontdict['fontsize'],'family':[fontdict['family']]})
+ax.set_xticks(np.arange(0, len(diets.columns),1), labels = diets.columns, 
+              fontdict = fontdict)
+
+ax.set_yticks(ax.get_yticks(), labels = [round(_, 7) for _ in ax.get_yticks()], fontdict = fontdict)
+
+# formatter = ticker.ScalarFormatter(useMathText=True)
+# formatter.set_scientific(True)
+# formatter.set_powerlimits((-3, 3))  # Use scientific notation outside this range
+# ax.yaxis.set_major_formatter(formatter)
+
+ax.set_ylabel(u"Extinction opportunity cost ($10^{-9}\Delta$E per-species per-capita)", 
+              fontdict = fontdict)
 
 fig = plt.gcf()
 fig.set_size_inches(figsize)

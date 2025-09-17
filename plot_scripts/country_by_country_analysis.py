@@ -8,11 +8,15 @@ Created on Thu Mar  7 15:34:30 2024
 import pandas as pd
 import numpy as np
 import os
+import matplotlib as mpl
+mpl.rcParams['pdf.fonttype'] = 42
+mpl.rcParams['ps.fonttype'] = 42
 import matplotlib.pyplot as plt
 
 
 # odPath = "E:\\OneDrive\\OneDrive - University of Cambridge"
 odPath = "C:\\Users\\Thomas Ball\\OneDrive - University of Cambridge"
+# resultsPath = os.path.join(odPath, "Work\\FOODv0\\results")
 resultsPath = os.path.join(odPath, "Work\\FOODv0\\results")
 figPath = "figs"
 
@@ -246,7 +250,9 @@ areas = odf.a.unique()
 #%%
 fig, ax = plt.subplots()
 alpha = 0.8
-figsize = (8, 7)
+mm = 0.1*1/2.54 
+figsize = (88*mm, 78*mm)
+fontdict = {'fontsize': 5, 'family' : 'Arial' }
 country_m49s = [country_db[country_db.ISO3==c].M49.squeeze() for c in areas]
 mean_cals = cal_dat[cal_dat["Area Code (M49)"].isin(country_m49s)].Value.mean()
 
@@ -306,7 +312,7 @@ for a, area in enumerate(areas):
         # else:
         #     color = "k" 
             
-        val = cdat[cdat.g==group].total_cap.squeeze() * cal_scalar
+        val = 1E9 * cdat[cdat.g==group].total_cap.squeeze() * cal_scalar
         
         if a == 0:
             #label = group
@@ -326,198 +332,15 @@ for a, area in enumerate(areas):
         
     print(area, cdat[cdat.g=="Ruminant meat"].total_cap.squeeze() * cal_scalar / ctotal)
     
-ax.legend(ncol = 1)
-ax.set_xticks(np.arange(0, len(areas),1), labels = ["UK" if a == "GBR" else a for a in areas])
-ax.set_ylabel(u"Extinction opportunity cost ($10^{-9}\Delta$E per-capita)")
+ax.legend(ncol = 1, prop = {'size': fontdict['fontsize'],'family':[fontdict['family']]})
+ax.set_xticks(np.arange(0, len(areas),1), labels = ["UK" if a == "GBR" else a for a in areas],
+              fontdict = fontdict)
+ax.set_ylabel(u"Extinction opportunity cost ($10^{-9}\Delta$E per-capita)", 
+              fontdict = fontdict)
+ax.set_yticks(ax.get_yticks(), labels = ax.get_yticks(), fontdict = fontdict)
 fig = plt.gcf()
 fig.set_size_inches(figsize)
 fig.tight_layout()
-
-
-#%%
-def OSRATIO():
-    ac = len(areas)
-    ag = len(groups)
-    
-    offset_scale = 0.7
-    bwidth = -0.01 + offset_scale / ac
-    alpha_offset = 0.3
-    ylim = (-1.2, 15.5)
-    figsize = (8, 7)
-    markersize = 40
-    
-    fig, axs = plt.subplots(2, 1)
-    
-    country_m49s = [country_db[country_db.ISO3==c].M49.squeeze() for c in areas]
-    mean_cals = cal_dat[cal_dat["Area Code (M49)"].isin(country_m49s)].Value.mean()
-    
-    new_ax = len(groups) // 2
-    
-    for a, area in enumerate(areas):
-        
-        ccode = country_db[country_db.ISO3==area].M49
-        ccals = cal_dat[cal_dat["Area Code (M49)"]==ccode.squeeze()].Value.squeeze()
-        cal_scalar = mean_cals / ccals
-        cdat = odf[odf.a==area]
-        
-        try:
-            marker = coi[area]["marker"]
-        except KeyError:
-            marker = "x"
-            
-        try:
-            color = coi[area]["color"]
-        except KeyError:
-            color = "k"  
-            
-        offset = - (offset_scale/2) + offset_scale * a/ac 
-        
-        alpha = (a + alpha_offset) / (ac + alpha_offset)
-        alpha = 0.5
-        
-        for g, group in enumerate(groups):
-                
-            if g >= new_ax:
-                ax = axs[1]
-            else:
-                ax = axs[0]
-                
-            # if group in colours.keys():
-            #     color = colours[group]
-            # else:
-            #     color = "k" 
-            
-            gdat = cdat[cdat.g == group]
-            
-            rval = gdat.ratio.squeeze()
-            
-            if rval > ylim[1]:
-                ravl = ylim[1] - 0.2
-            
-            xpos = g + offset
-            
-            if rval != 0:
-                ax.bar(xpos, rval - 1, bottom = 1, 
-                       width = bwidth, color = color, alpha = alpha)
-                ax.scatter([xpos], [rval],
-                           marker = marker, s = markersize,
-                           color = color)
-                if g == 0:
-                    ax.scatter([xpos], [rval],
-                               marker = marker, color = color,
-                               s = markersize,
-                               label = area)
-                           
-    axs[0].hlines(1, *axs[0].get_xlim(), linestyle = "--", color = "k", alpha = 0.8)
-    axs[1].hlines(1, *axs[1].get_xlim(), linestyle = "--", color = "k", alpha = 0.8)
-    
-    axs[0].set_ylim(*ylim)
-    axs[1].set_ylim(*ylim)        
-    
-    axs[0].legend()
-    
-    def strip_chars(string):
-        ustring = string.replace(" and ", ", ")
-        return ustring
-        
-    sgroups = [strip_chars(string) for string in groups]
-    axs[0].set_xticks(np.arange(0, len(sgroups[:new_ax]),1), labels = sgroups[:new_ax], 
-                      rotation = 75)
-    axs[1].set_xticks(np.arange(new_ax, new_ax + len(sgroups[new_ax:]),1), labels = sgroups[new_ax:], 
-                      rotation = 75)
-    fig = plt.gcf()
-    fig.set_size_inches(figsize)
-    fig.tight_layout()
-
-#%%
-def OSBARS_unused():
-    ac = len(areas)
-    ag = len(groups)
-    
-    offset_scale = 0.4
-    bwidth = -0.6 + offset_scale / 2
-    alpha_offset = 0.5
-    figsize = (8, 7)
-    markersize = 60
-    
-    fig, ax = plt.subplots()
-    
-    country_m49s = [country_db[country_db.ISO3==c].M49.squeeze() for c in areas]
-    mean_cals = cal_dat[cal_dat["Area Code (M49)"].isin(country_m49s)].Value.mean()
-    
-    xgroups = groups[:-1]
-    xgroups = [k for k in colours.keys() if "Sugar" not in k]
-    
-    for a, area in enumerate(areas):
-        
-        ccode = country_db[country_db.ISO3==area].M49
-        ccals = cal_dat[cal_dat["Area Code (M49)"]==ccode.squeeze()].Value.squeeze()
-        cal_scalar = mean_cals / ccals
-        cal_scalar = 1
-        
-        cdat = odf[odf.a==area]
-        
-        try:
-            marker = coi[area]["marker"]
-        except KeyError:
-            marker = "x"
-        
-        alpha = (a + alpha_offset) / (ac + alpha_offset)
-        alpha = 0.6
-        
-        os_b, do_b = 0,0 
-    
-        for g, group in enumerate(xgroups):
-            
-            try:
-                color = colours[group]
-            except KeyError:
-                color = "k"  
-            
-            gdat = cdat[cdat.g == group]
-            
-            val = gdat.total_cap.squeeze()
-            os_val = val * gdat.perc_os.squeeze()
-            do_val = val * (1-gdat.perc_os.squeeze())
-            
-            offset = - (offset_scale/2) + offset_scale * 0
-            
-            xpos = a + offset
-            ax.bar(xpos, os_val, bottom = os_b, 
-                   width = bwidth, color = color, alpha = alpha)
-            offset = - (offset_scale/2) + offset_scale * 1 
-            os_b += os_val
-            
-            xpos = a + offset
-            ax.bar(xpos, do_val, bottom = do_b,
-                   width = bwidth, color = color, alpha = alpha)
-            do_b += do_val
-                           
-    # axs[0].hlines(1, *axs[0].get_xlim(), linestyle = "--", color = "k", alpha = 0.8)
-    # axs[1].hlines(1, *axs[1].get_xlim(), linestyle = "--", color = "k", alpha = 0.8) 
-    
-    # axs[0].legend()
-    
-    # def strip_chars(string):
-    #     ustring = string.replace(" and ", ", ")
-    #     return ustring
-        
-    # sgroups = [strip_chars(string) for string in groups]
-    # axs[0].set_xticks(np.arange(0, len(sgroups[:new_ax]),1), labels = sgroups[:new_ax], 
-    #                   rotation = 75)
-    # axs[1].set_xticks(np.arange(new_ax, new_ax + len(sgroups[new_ax:]),1), labels = sgroups[new_ax:], 
-    #                   rotation = 75)
-    
-    # fig = plt.gcf()
-    # # fig.text(0.5, 0.04, 'common X', ha='center')
-    
-    # fig.set_size_inches(figsize)
-    # fig.add_subplot(111, frameon=False)
-    # # hide tick and tick label of the big axis
-    # plt.tick_params(labelcolor='none', which='both', top=False, bottom=False, left=False, right=False)
-    # # plt.xlabel("common X")
-    # plt.ylabel("Proportion of per-capita \nconsumption impact arising from imports")
-    # fig.tight_layout()
 
 #%%
 
@@ -527,10 +350,13 @@ ag = len(groups)
 offset_scale = 0.4
 bwidth = -0.6 + offset_scale / 2
 # alpha_offset = 0.5
-figsize = (8, 7)
+mm = 0.1*1/2.54 
+figsize = (88*mm, 78*mm)
+fontdict = {'fontsize': 5, 'family' : 'Arial' }
+
 markersize = 60
 
-dfsize = 30
+dfsize = 5
 dfalph = 0.6
 
 alpha = 0.8
@@ -607,7 +433,7 @@ for a, area in enumerate(areas):
         
         gdat = cdat[cdat.g == group]
         
-        val = gdat.total_cap.squeeze() / cdat.total_cap.sum()
+        val =  gdat.total_cap.squeeze() / cdat.total_cap.sum()
         os_val = val * gdat.perc_os.squeeze()
         do_val = val * (1-gdat.perc_os.squeeze())
         
@@ -658,10 +484,12 @@ ax.text(-0.5, 0.25, "Imported",
         
 ax.hlines(0, *ax.get_xlim(), linestyle = "--", color = "k", alpha = 0.6)
 ax.set_ylim(*ylim)
-ax.set_yticks(yticks, labels = yticks_labels)
-ax.legend(ncol = 1)
-ax.set_xticks(np.arange(0, len(areas),1), labels = ["UK" if a == "GBR" else a for a in areas])
-ax.set_ylabel(ylab)
+ax.set_yticks(yticks, labels = yticks_labels, fontdict = fontdict)
+ax.legend(ncol = 1, prop = {'size': fontdict['fontsize'],'family':[fontdict['family']]})
+ax.set_xticks(np.arange(0, len(areas),1), labels = ["UK" if a == "GBR" else a for a in areas],
+              fontdict = fontdict)
+ax.set_ylabel(ylab,
+              fontdict = fontdict)
 fig = plt.gcf()
 fig.set_size_inches(figsize)
 fig.tight_layout()

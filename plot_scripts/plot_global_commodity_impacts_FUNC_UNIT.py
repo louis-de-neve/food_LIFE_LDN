@@ -12,7 +12,8 @@ import os
 import pickle
 
 datPath = os.path.join("..", "model", "dat")
-oPath = os.path.join("..", "model", "global_commodity_impacts")
+# oPath = os.path.join("..", "model", "global_commodity_impacts")
+oPath = "E:\\Food_v1\\all_results_v1_gompertz\\global_commodity_impacts"
 
 db = pd.read_csv(os.path.join("..", "model", "crop_db.csv"))
 
@@ -202,6 +203,10 @@ fig, ax = plt.subplots()
 # ax.grid(visible = True, axis = "y", linestyle = "--", alpha = 0.8)
 xi = 0
 tick_labels = []
+
+# functional_units = {'100 grams protein': {'Ruminant meat': 0.26,
+#   'Legumes and pulses': 0.19,}}
+
 for f, (fu, fu_dat) in enumerate(functional_units.items()):
     
     
@@ -218,13 +223,16 @@ for f, (fu, fu_dat) in enumerate(functional_units.items()):
         dat = xdf[(xdf[AGGREGATE] == item)&(np.isfinite(xdf.w))].copy()
         dat["wn"] = dat.w / dat.w.sum()
         
-# %%
         scalar = fu_dat[item] * 10
         # scalar = 1
         # Get vals
         LQ = dat.LQ.unique().squeeze() / scalar
         MQ = dat.MQ.unique().squeeze() / scalar
         HQ = dat.HQ.unique().squeeze() / scalar
+        
+        print(item, MQ)
+        print("  ")
+        
         
         odf = pd.concat([odf, pd.DataFrame([item, LQ,MQ,HQ],index= ["g", "LQ", "MQ", "HQ"]).T])
         LQ = np.log10(LQ)
