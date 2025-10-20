@@ -13,7 +13,7 @@ import sys
 try:
     import data_utils
 except ModuleNotFoundError:
-    import offshoring.data_utils as data_utils
+    import model.data_utils as data_utils
     
 def add_item_cols(indf, datPath):
     indf = indf.copy()
@@ -30,14 +30,24 @@ def add_item_cols(indf, datPath):
             pass
     return indf
 
-def main(fs, country_of_interest, scenPath, datPath):
+def main(fs, country_of_interest, scenPath, datPath, year = 2020,
+         trade_feed = None,
+         trade_nofeed = None
+         ):
     
+    if not trade_nofeed:
+        trade_nofeed = os.path.join(datPath, "dat", f"TradeMatrix_import_dry_matter_2013_backup.csv")
+    if not trade_feed:
+        trade_feed = os.path.join(datPath, "dat", f"TradeMatrixFeed_import_dry_matter_2013_backup.csv")
+        
     fserr = fs.copy()
     means = fs.groupby(["Item", "Item Code"]).Value.mean().reset_index()
     errs = fs.groupby(["Item", "Item Code"]).Value.sem().reset_index()
     
-    fs = fs[fs.Year == fs.Year.unique().max()]
-    fserr = fserr[fserr.Year==fserr.Year.unique().max()]
+    fs = fs[fs.Year.astype(int) == year]
+
+    fserr = fserr[fserr.Year == year]
+    
     for item in means.Item:
         fs.loc[fs.Item == item, "Value"] = means[means.Item==item].Value.values[0]
         fserr.loc[fserr.Item == item, "Value"] = errs[errs.Item==item].Value.values[0]
@@ -92,8 +102,15 @@ def main(fs, country_of_interest, scenPath, datPath):
         return df
     
     #%% calculate ratio of imports for crops, AP, and feed
-    prov_mat_no_feed = data_utils.get_provenance_matrix_nofeed(2013, datPath)
-    prov_mat_feed = data_utils.get_provenance_matrix_feed(2013, datPath)
+    # prov_mat_no_feed = data_utils.get_provenance_matrix_nofeed(2013, datPath)
+    # prov_mat_feed = data_utils.get_provenance_matrix_feed(2013, datPath)
+    
+    prov_mat_no_feed = pd.read_csv(trade_nofeed)
+    prov_mat_feed = pd.read_csv(trade_feed)
+    
+    # print(prov_mat_no_feed)
+    # print(prov_mat_feed)
+    
     def import_ratios(prov_mat_feed, prov_mat_no_feed, coi_code):
         # This is the trade matrix with the re-exp algorithm applied and 
         # converted into dry matter, but no conversion to feed has taken place 
@@ -142,7 +159,7 @@ def main(fs, country_of_interest, scenPath, datPath):
                 sums = df.groupby(level).Value.sum()
             
                 for row in df.index:
-                   
+
                     rowdat = df.loc[row]
                     if rowdat.Producer_Country_Code == coi_code:                       
                         try:
@@ -195,10 +212,9 @@ def main(fs, country_of_interest, scenPath, datPath):
         human_consumed_imports = pd.concat([imports_feed_crops_ratio,
                                             imports_no_feed_anim_ratio])
         return human_consumed_imports
-    human_consumed_imports = \
-        import_ratios(  prov_mat_feed,
-                        prov_mat_no_feed, 
-                        coi_code)
+    human_consumed_imports = import_ratios(prov_mat_feed,
+                                           prov_mat_no_feed, 
+                                           coi_code)
     
     
     #%% reqs for doing provenance calc
@@ -228,6 +244,8 @@ def main(fs, country_of_interest, scenPath, datPath):
         feed_prov : animal products converted to feed requirement and respective
                     crop provenance (countries * feed products)
         """
+        
+        # print(fs)
         df_hc = fs.copy()
         df_hc_err = fserr.copy()
         for row in df_hc.iterrows():
@@ -264,6 +282,9 @@ def main(fs, country_of_interest, scenPath, datPath):
                                                  CPC_item_code)]
                     df_hc_err = df_hc_err[np.logical_not(df_hc_err["Item Code"]==
                                                  CPC_item_code)]
+        
+        # print(df_hc)
+        
         df_hc = df_hc[np.logical_not(df_hc.ratio.isna())]
         df_hc_err = df_hc_err[np.logical_not(df_hc_err.ratio.isna())]
         df_hc["value_primary"] = df_hc.Value / df_hc.ratio
@@ -344,6 +365,7 @@ def main(fs, country_of_interest, scenPath, datPath):
                     dfx["Animal_Product"] = item_name
                     feed_prov = pd.concat([feed_prov, dfx])
         return cons_prov, feed_prov
+    
     cons_prov, feed_prov = fs_provenance(fs, fserr)
     cons_prov = cons_prov[(cons_prov.Value > 1E-8)&(cons_prov.provenance > 0)]
     cons_prov.to_csv(os.path.join(scenPath, "human_consumed.csv"))

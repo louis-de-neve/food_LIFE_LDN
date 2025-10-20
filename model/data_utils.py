@@ -50,39 +50,39 @@ def get_area_codes(datPath):
     codes = pd.read_excel(nocs_file)
     return codes
 
-def get_provenance_matrix_feed(year, datPath):
-    """
-    Checks for and then loads the consumption-provenance matrix for a given
-    year, as calculated using the R-scripts provided in the SOM of 
-    https://doi.org/10.1007/s11625-022-01138-7
+# def get_provenance_matrix_feed(year, datPath):
+#     """
+#     Checks for and then loads the consumption-provenance matrix for a given
+#     year, as calculated using the R-scripts provided in the SOM of 
+#     https://doi.org/10.1007/s11625-022-01138-7
 
-    """
-    prefix = "TradeMatrixFeed_import_dry_matter_"
-    year_str = str(year)
-    file_name = prefix + year_str + ".csv"
-    file_path = os.path.join(datPath,"dat",file_name)
-    if os.path.exists(file_path):
-        df = pd.read_csv(file_path)
-    else:
-        sys.exit(f"""Couldn't find {file_name} in {datPath}""")
-    return df
+#     """
+#     prefix = "TradeMatrixFeed_import_dry_matter_"
+#     year_str = str(year)
+#     file_name = prefix + year_str + ".csv"
+#     file_path = os.path.join(datPath,"dat",file_name)
+#     if os.path.exists(file_path):
+#         df = pd.read_csv(file_path)
+#     else:
+#         sys.exit(f"""Couldn't find {file_name} in {datPath}""")
+#     return df
 
-def get_provenance_matrix_nofeed(year, datPath):
-    """
-    Checks for and then loads the consumption-provenance matrix for a given
-    year, as calculated using the R-scripts provided in the SOM of 
-    https://doi.org/10.1007/s11625-022-01138-7
+# def get_provenance_matrix_nofeed(year, datPath):
+#     """
+#     Checks for and then loads the consumption-provenance matrix for a given
+#     year, as calculated using the R-scripts provided in the SOM of 
+#     https://doi.org/10.1007/s11625-022-01138-7
 
-    """
-    prefix = "TradeMatrix_import_dry_matter_"
-    year_str = str(year)
-    file_name = prefix + year_str + ".csv"
-    file_path = os.path.join(datPath,"dat",file_name)
-    if os.path.exists(file_path):
-        df = pd.read_csv(file_path)
-    else:
-        sys.exit(f"""Couldn't find {file_name} in {datPath}""")
-    return df
+#     """
+#     prefix = "TradeMatrix_import_dry_matter_"
+#     year_str = str(year)
+#     file_name = prefix + year_str + ".csv"
+#     file_path = os.path.join(datPath,"dat",file_name)
+#     if os.path.exists(file_path):
+#         df = pd.read_csv(file_path)
+#     else:
+#         sys.exit(f"""Couldn't find {file_name} in {datPath}""")
+#     return df
 
 def get_wwf_pbd(datPath):
     file_name = "Planet-Based Diets - Data and Viewer.xlsx"

@@ -14,7 +14,10 @@ import faostat
 def main(overwrite = True, 
          bd_path = os.path.join("dat", "country_opp_cost_v6.csv"), 
          results_path = "results",
-         datPath = os.path.join("model", "dat")):
+         datPath = os.path.join("model", "dat"),
+         year = 2020,
+         trade_feed = None,
+         trade_nofeed = None):
     
     years = 5
     # datPath = os.path.join("model", "dat")
@@ -33,7 +36,15 @@ def main(overwrite = True,
         pasture_factors_file = "tb_pasture_factors_2.csv" # dat
         primary_mapping_file = "primary_item_map_feed.csv" # Schwarzmueller
         content_factors_file = "content_factors_per_100g.xlsx" # Schwarzmueller
-        prov_mat_feed_file = "TradeMatrixFeed_import_dry_matter_2013.csv" # Schwarzmueller
+        
+        
+        # if not trade_nofeed:
+        #     trade_nofeed = os.path.join(datPath, "dat", f"TradeMatrix_import_dry_matter_2013_backup.csv")
+        if not trade_feed:
+            trade_feed = os.path.join(datPath, "dat", f"TradeMatrixFeed_import_dry_matter_2013_backup.csv")
+            prov_mat_feed_file = trade_feed # Schwarzmueller
+        prov_mat_feed = pd.read_csv(os.path.join(prov_mat_feed_file))
+            
         weighing_factors_file = "weighing_factors.csv" # Schwarzmueller
         p_n_file = "Planet-Based Diets - Data and Viewer.xlsx" # WWF planet based diets
         
@@ -42,7 +53,7 @@ def main(overwrite = True,
 
         prod = faostat.get_data_df(
         "QCL",
-        pars={"year": "2020",},
+        pars={"year": str(year)},
         strval=False
         )
 
@@ -57,7 +68,7 @@ def main(overwrite = True,
                                         header = 1)
         pasture_factors = pd.read_csv(os.path.join(datPath, pasture_factors_file), 
                                                 index_col = 0)
-        prov_mat_feed = pd.read_csv(os.path.join(datPath, prov_mat_feed_file))
+        
         weighing_factors = pd.read_csv(os.path.join(datPath, weighing_factors_file))
         p_n = pd.read_excel(os.path.join(datPath, p_n_file), 
                             sheet_name = "DATA - Product Level")

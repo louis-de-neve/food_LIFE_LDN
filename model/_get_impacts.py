@@ -8,7 +8,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 try:
-    import offshoring.data_utils as data_utils
+    import model.data_utils as data_utils
 except ModuleNotFoundError:
     import data_utils
 import os

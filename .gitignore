@@ -171,3 +171,5 @@ cython_debug/
 model/global_commodity_impacts/country_bd_items_weights.csv
 model/dat/TradeMatrixFeed_import_dry_matter_2013.csv
 plot_scripts/sankey_diag.py
+model/dat/TradeMatrixFeed_import_dry_matter_2013_backup.csv
+model/dat/TradeMatrix_import_dry_matter_2013_backup.csv
